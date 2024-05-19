@@ -1,0 +1,56 @@
+#!/bin/bash
+
+
+fichero=$(zenity --file-selection --title="Selecciona el archivo a cifrar")
+
+if [ -z "$fichero" ]; then
+    zenity --error --text="No se seleccionó ningún archivo."
+    exit 1
+fi
+
+
+if [ ! -f "$fichero" ]; then
+    zenity --error --text="El archivo seleccionado no existe."
+    exit 1
+fi
+
+
+fichero_cifrado="${fichero}.gpg"
+
+
+if [ -f "$fichero_cifrado" ]; then
+    zenity --question --text="El archivo ya ha sido cifrado. ¿Desea sobrescribir el archivo cifrado existente?"
+    if [ $? -ne 0 ]; then
+        zenity --info --text="Operación cancelada, volviendo al menú principal"
+        exit 1
+    fi
+fi
+
+contraseña=$(zenity --password --title="Introduce la contraseña para cifrar el archivo")
+
+
+if [ -z "$contraseña" ]; then
+    zenity --error --text="No se introdujo ninguna contraseña."
+    exit 1
+fi
+
+
+echo "$contraseña" | gpg --batch --yes --passphrase-fd 0 -c "$fichero"
+
+if [ ! -f "$fichero_cifrado" ]; then
+    zenity --error --text="Error al cifrar el archivo."
+    exit 1
+fi
+
+link_fichero="${fichero}.link"
+ln -f "$fichero" "$link_fichero"
+
+
+if [ -f "$link_fichero" ]; then
+    zenity --info --text="Archivo cifrado: $fichero_cifrado\nEnlace duro creado: $link_fichero"
+else
+    zenity --error --text="Error al crear el enlace duro."
+    exit 1
+fi
+
+

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+while true
+do
+    
+    correo=$(zenity --entry --title="CORREO REQUERIDO" --text="Escriba su correo")
+    if [ $? -ne 0 ]
+    then
+	zenity --info --text="Saliendo de esta opción"
+	sleep 2
+	exit
+    fi
+
+    if [[ "$correo" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
+    then
+        break
+    else
+        zenity --error --text="El correo no cumple con los requisitos"
+    fi
+done
+
+
+asunto=$(zenity --entry --title="ASUNTO REQUERIDO" --text="Escriba el asunto de correo")
+cuerpo=$(zenity --entry --title="CUERPO REQUERIDO" --text="Escriba el cuerpo del correo")
+
+
+email_content="Subject: $asunto\n\n$cuerpo"
+
+echo -e "$email_content" | sendmail -v "$correo" 2> error_log.txt
+
+if [ $? -eq 0 ]
+then
+    zenity --info --text="Correo enviado"
+else
+    error_message=$(cat error_log.txt)
+    zenity --error --text="Correo no enviado. Error: $error_message"
+fi
+

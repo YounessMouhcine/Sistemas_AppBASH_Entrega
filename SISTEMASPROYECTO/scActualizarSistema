@@ -1,0 +1,36 @@
+#!/bin/bash
+
+mostrarZenitybar() {
+    local mensaje="$1"
+    (
+    for progreso in {1..100}
+    do
+        echo $progreso
+        sleep 0.1
+    done
+    ) | zenity --progress --title="$mensaje" --text="Espere..." --percentage=0 --auto-close
+}
+
+exec &> mensajesAc.txt
+
+mensaje="Actualizando lista de paquetes"
+mostrarZenitybar "$mensaje"
+sudo apt-get update -y
+
+mensaje="Actualizando paquetes instalados"
+mostrarZenitybar "$mensaje"
+sudo apt-get upgrade -y
+
+mensaje="Actualizando la distribución"
+mostrarZenitybar "$mensaje"
+sudo apt-get dist-upgrade -y
+
+mensaje="Limpiando paquetes obsoletos"
+mostrarZenitybar "$mensaje"
+sudo apt-get autoremove -y
+
+mensaje="Limpiando la lista de paquetes"
+mostrarZenitybar "$mensaje"
+sudo apt-get autoclean -y
+
+zenity --info --text="Actualizado, volviendo al menú principal"

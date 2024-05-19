@@ -1,0 +1,55 @@
+#!/bin/bash
+
+mostrarPregunta(){
+    zenity --question --title="CONFIRMACIÓN" --width=500 --text="¿Desea ejecutar la opcion $1 ?" --ok-label="Aceptar"  --cancel-label="No, quiero volver"
+    return $?
+}
+
+while :
+do
+    opcion=$(zenity --list --height=200 --text="Escoja una de las opciones proporcionadas" --title="INTRODUCE UNA OPCIÓN" --column="" --column="Opciones" --print-column=2 1 "Cifrar archivo y crear enlace duro" 2 "Actualizar y limpiar sistema" 3 "Enviar un correo" 4 "Finalizar programa")
+
+    if [ $? -ne 0 ] 
+    then
+        zenity --info --text="Hasta luego" &> /dev/null
+        sleep 2
+        exit
+    fi
+
+    if [ -z "$opcion" ]
+    then
+        zenity --info --text="Por favor, seleccione una opción antes de presionar Aceptar."
+        continue 
+    fi
+
+    mostrarPregunta "$opcion"
+    respuesta=$?
+
+    if [ $respuesta -eq 0 ]
+    then
+        case $opcion in
+            "Cifrar archivo y crear enlace duro")
+                ./scCifrarArchivo
+                ;; 
+            "Actualizar y limpiar sistema")
+		./scActualizarSistema
+                ;; 
+            "Enviar un correo")
+                ./scEnviarCorreo
+                ;; 
+            "Finalizar programa")
+                progreso=0
+                while [ $progreso -ne 100 ]
+                do
+                    sleep 2
+                    progreso=$((progreso + 16))
+                    echo "$progreso"
+                done | zenity --progress --title="CERRANDO PROGRAMA" --text="Cerrando" --auto-close
+                exit
+                ;;
+        esac
+    else
+        zenity --info --text="Volviendo al menú principal..."
+    fi
+done
+
